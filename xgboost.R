@@ -2,11 +2,15 @@ library(raster)
 library(xgboost)
 
 shp <- shapefile("XGboost/Ri62_Suphanburi_Intersect_po.shp")
-ras <- stack("XGboost/test_data.tif")
+ras <- stack("XGboost/test.tif")
 vals <- extract(ras,shp)
+View(vals)
 
 train <- data.matrix(vals)
+View(train)
+
 classes <- as.numeric(as.factor(shp@data$Code)) - 1
+View(classes)
 
 xgb <- xgboost(data = train,
                label = classes,
@@ -15,6 +19,8 @@ xgb <- xgboost(data = train,
                max_depth = 6,
                eta = 0.1
                )
+
+library(cellran)
 
 result <- predict(xgb,ras[1:(nrow(ras)*ncol(ras))])
 res <- raster(ras)
