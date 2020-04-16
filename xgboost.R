@@ -23,6 +23,7 @@ library(nnet)
 library(NeuralNetTools)
 library(LiblineaR)
 library(xgboost)
+library(e1071)
 
 # Packages for general data processing and parallel computation
 library(data.table)
@@ -41,11 +42,13 @@ dt2 <- ras %>%
   extract(y = shp) %>%  
   as.data.frame %>% 
   mutate(id_cls = shp@data$Code_EN)
-#vals <- extract(ras,shp)
-#train <- data.matrix(vals)
-#classes <- as.numeric(as.factor(shp@data$Code_EN)) - 1
-
+########################################################################
+#write.csv(dt2,"Training_data/Samples1.csv", row.names = FALSE)
+vals <- extract(ras,shp)
+train <- data.matrix(vals)
+classes <- as.numeric(as.factor(shp@data$Code_EN)) - 1
 #######################################################################
+
 #70% of the sample size
 smp_size <- floor(0.70 * nrow(dt2))
 
@@ -55,49 +58,29 @@ train_ind <- sample(seq_len(nrow(dt2)), size = smp_size)
 
 train <- dt2[train_ind, ]
 test <- dt2[-train_ind, ]
-#######################################################################
-# create cross-validation folds (splits the data into n random groups)
-n_folds <- 10
-set.seed(321)
-folds <- createFolds(1:nrow(train), k = n_folds)
-# Set the seed at each resampling iteration. Useful when running CV in parallel.
-seeds <- vector(mode = "list", length = n_folds + 1) # +1 for the final model
-for(i in 1:n_folds) seeds[[i]] <- sample.int(1000, n_folds)
-seeds[n_folds + 1] <- sample.int(1000, 1) # seed for the final model
-###########################################################################
-model.class <- rpart(as.factor(train$id_cls)~., data = train, method = 'class')
-rpart.plot(model.class, box.palette = 0, main = "Classification Tree")
+train1 = train %>% select(1:26)
+test1 = test %>% select(1:26)
 
-pr <- predict(ras, model.class, type ='class', progress = 'text') %>% 
-  ratify()
-
-levels(pr) <- levels(pr)[[1]] %>%
-  mutate(legend = c("May","June","July","Sep","Other"))
-
-##########################################
+#############################################################################
+####################XGBOOST##################################################
 xgb <- xgboost(data = train, 
-               label = classes, 
+               label = train$id_cls, 
                eta = 0.1,
                max_depth = 6, 
                nround=100, 
                objective = "multi:softmax",
                num_class = length(unique(classes)),
                nthread = 3)
-
 result <- predict(xgb,ras[1:(nrow(ras)*ncol(ras))])
 res <- raster(ras)
 res1 <- setValues(res,result)
-
 writeRaster(res1,'test4.tif',options=c('TFW=YES'))
 
+###########################################################################
 # Fitting SVM to the Training set 
-
-library(e1071) 
-
-classifier = svm(formula = classes, 
-                 data = train, 
-                 type = 'C-classification', 
-                 kernel = 'linear') 
+dat = data.frame(x = train1, y = as.factor(train$id_cls))
+svmfit = svm(y ~ ., data = dat, kernel = "linear", cost = 10, scale = FALSE)
+print(svmfit)
 
 # Predicting the Test set results 
 y_pred = predict(classifier, newdata = test_set[-3]) 
