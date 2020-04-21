@@ -48,6 +48,14 @@ vals <- extract(ras,shp)
 train <- data.matrix(vals)
 classes <- as.numeric(as.factor(shp@data$Code_EN)) - 1
 #######################################################################
+set.seed(100)  # For reproducibility
+
+X_train = xgb.DMatrix(as.matrix(training %>% select(-PE)))
+y_train = training$PE
+X_test = xgb.DMatrix(as.matrix(testing %>% select(-PE)))
+y_test = testing$PE
+
+
 
 #70% of the sample size
 smp_size <- floor(0.70 * nrow(dt2))
@@ -60,6 +68,8 @@ train <- dt2[train_ind, ]
 test <- dt2[-train_ind, ]
 train1 = train %>% select(1:26)
 test1 = test %>% select(1:26)
+
+
 
 #############################################################################
 ####################XGBOOST##################################################
