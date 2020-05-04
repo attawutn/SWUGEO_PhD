@@ -65,8 +65,6 @@ plot(model_rf)
 
 cm_rf <- confusionMatrix(data = predict(model_rf, newdata = dt_test),
                          dt_test$id_cls)
-cm_rf
-
 
 # Train the model using SVM:Ridial Basis
 model_svmRadial = train(id_cls ~ .  ,data = dt_train, method='svmRadialCost', tuneLength=5, trControl = ctrl)
@@ -81,9 +79,7 @@ cm_svm
 #Train Neural Network
 model_nn <- train(id_cls ~ .  ,data = dt_train, 
                   method = "nnet", trControl = ctrl,
-                  linout = FALSE,)
-plot(model_nn)
-
+                  linout = TRUE,)
 cm_nn <- confusionMatrix(data = predict(model_nn, newdata = dt_test),
                          dt_test$id_cls)
 cm_nn
@@ -113,7 +109,7 @@ xgb_model = train(id_cls ~ .  ,data = dt_train,
                   tuneGrid = xgbGrid,
                   method = "xgbTree"
 )
-plot(xgb_model)
+
 cm_xgb <- confusionMatrix(data = predict(xgb_model, newdata = dt_test),
                           dt_test$id_cls)
 cm_xgb
@@ -126,13 +122,13 @@ summary(models_compare)
 ###Predict raster
 
 nnet_prediction = predict(ras, model=model_nn)
-writeRaster(nnet_prediction,'test2_nn.tif',options=c('TFW=YES'))
+writeRaster(nnet_prediction,'test2_nn_tune.tif',options=c('TFW=YES'))
 
 rf_prediction = predict(ras, model=model_rf)
-writeRaster(rf_prediction,'test2_rf.tif',options=c('TFW=YES'))
+writeRaster(rf_prediction,'test2_rf_tune.tif',options=c('TFW=YES'))
 
 svm_prediction = predict(ras, model=model_svmRadial)
-writeRaster(svm_prediction,'test2_svm.tif',options=c('TFW=YES'))
+writeRaster(svm_prediction,'test2_svm_tune.tif',options=c('TFW=YES'))
 
 xgb_prediction = predict(ras, model=xgb_model)
-writeRaster(xgb_prediction,'test2_xgb.tif',options=c('TFW=YES'))
+writeRaster(xgb_prediction,'test2_xgb_tune.tif',options=c('TFW=YES'))
