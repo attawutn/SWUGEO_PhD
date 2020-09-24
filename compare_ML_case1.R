@@ -120,7 +120,6 @@ models_compare <- resamples(list(RF=model_rf, SVM=model_svmRadial,NN=model_nn,xg
 summary(models_compare)
 
 ###Predict raster
-
 nnet_prediction = predict(ras, model=model_nn)
 writeRaster(nnet_prediction,'test_nn_untune.tif',options=c('TFW=YES'))
 

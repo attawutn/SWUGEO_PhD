@@ -24,7 +24,7 @@ library(snow)
 library(parallel)
 
 shp <- shapefile("/Test/Training_data/training_data1.shp")
-ras <- stack("/Test/Process/Output/13month_Orb_Cal_Spk_TC_dB_Stack.tif")
+ras <- stack("/Test/Process/Output/May_test.tif")
 
 dt <-  extract(ras, shp) %>% as.data.frame %>% mutate(id_cls = shp@data$Code_EN)
 
@@ -128,14 +128,14 @@ summary(models_compare)
 
 ##Predict
 nnet_prediction = predict(ras, model=model_nn)
-writeRaster(nnet_prediction,'test_nn.tif',options=c('TFW=YES'))
+writeRaster(nnet_prediction,'test_nn_may.tif',options=c('TFW=YES'))
 
 rf_prediction = predict(ras, model=model_rf)
-writeRaster(rf_prediction,'test_rf.tif',options=c('TFW=YES'))
+writeRaster(rf_prediction,'test_rf_may.tif',options=c('TFW=YES'))
 
 svm_prediction = predict(ras, model=model_svmRadial)
-writeRaster(svm_prediction,'test_svm.tif',options=c('TFW=YES'))
+writeRaster(svm_prediction,'test_svm_may.tif',options=c('TFW=YES'))
 
 xgb_prediction = predict(ras, model=xgb_model)
-writeRaster(xgb_prediction,'test_xgb.tif',options=c('TFW=YES'))
+writeRaster(xgb_prediction,'test_xgb_may.tif',options=c('TFW=YES'))
 
