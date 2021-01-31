@@ -1,1 +1,0 @@
-# SWUGEO_Special_Topics
